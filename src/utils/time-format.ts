@@ -1,9 +1,8 @@
-// Função para formatar data e hora
+// src/utils/time-format.ts
 
-interface Date {
-    // ...
-}
-
-export function formatDateTime(date: Date): string {
-    return "Data e hora formatada"
+export function formatTime(date: Date): string {
+    const hours = date.getHours().toString().padStart(2, "0");
+    const minutes = date.getMinutes().toString().padStart(2, "0");
+    const seconds = date.getSeconds().toString().padStart(2, "0");
+    return `${hours}:${minutes}:${seconds}`;
 }
