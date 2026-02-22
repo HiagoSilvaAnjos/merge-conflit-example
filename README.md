@@ -164,3 +164,78 @@ export function formatDate(date: Date): string {
 | Ponto de conflito | mesma função, corpo diferente | mesma função, corpo diferente |
 
 O Git não sabe qual versão de `formatTime` é a correta — é necessário **resolver o conflito manualmente**, decidindo qual lógica manter (ou combinando as duas).
+
+---
+
+## 🛠️ Como resolver o conflito
+
+### Opção 1 — Manter só o Dev 1 (24h)
+
+Descarta o trabalho do Dev 2 e fica com a versão original:
+
+```ts
+export function formatTime(date: Date): string {
+    const hours = date.getHours().toString().padStart(2, "0");
+    const minutes = date.getMinutes().toString().padStart(2, "0");
+    const seconds = date.getSeconds().toString().padStart(2, "0");
+    return `${hours}:${minutes}:${seconds}`;
+}
+```
+
+---
+
+### Opção 2 — Manter só o Dev 2 (12h + formatDate)
+
+Descarta o trabalho do Dev 1 e fica com a versão do Dev 2:
+
+```ts
+export function formatTime(date: Date): string {
+    const period = date.getHours() >= 12 ? "PM" : "AM";
+    const hours = (date.getHours() % 12 || 12).toString().padStart(2, "0");
+    const minutes = date.getMinutes().toString().padStart(2, "0");
+    return `${hours}:${minutes} ${period}`;
+}
+
+export function formatDate(date: Date): string {
+    return `${date.getDate()}/${date.getMonth() + 1}/${date.getFullYear()}`;
+}
+```
+
+---
+
+### Opção 3 — Combinar os dois ✅ (mais comum na vida real)
+
+Preserva o trabalho dos dois renomeando as funções para evitar colisão:
+
+```ts
+// formato 24h — usado pelo Clock (Dev 1)
+export function formatTime24h(date: Date): string {
+    const hours = date.getHours().toString().padStart(2, "0");
+    const minutes = date.getMinutes().toString().padStart(2, "0");
+    const seconds = date.getSeconds().toString().padStart(2, "0");
+    return `${hours}:${minutes}:${seconds}`;
+}
+
+// formato 12h — usado pelo DateDisplay (Dev 2)
+export function formatTime12h(date: Date): string {
+    const period = date.getHours() >= 12 ? "PM" : "AM";
+    const hours = (date.getHours() % 12 || 12).toString().padStart(2, "0");
+    const minutes = date.getMinutes().toString().padStart(2, "0");
+    return `${hours}:${minutes} ${period}`;
+}
+
+// formatação de data — Dev 2
+export function formatDate(date: Date): string {
+    return `${date.getDate()}/${date.getMonth() + 1}/${date.getFullYear()}`;
+}
+```
+
+---
+
+### Quando usar cada opção?
+
+| Opção | Quando usar |
+|---|---|
+| **Manter Dev 1** | O trabalho do Dev 2 é irrelevante ou será refeito |
+| **Manter Dev 2** | O Dev 1 está desatualizado e o Dev 2 é a versão correta |
+| **Combinar** | Ambos têm valor e o código pode coexistir — **mais comum** |
